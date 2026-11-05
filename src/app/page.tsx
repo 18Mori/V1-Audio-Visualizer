@@ -2,11 +2,11 @@
 
 import dynamic from 'next/dynamic';
 
-const AudioVisualizerStudio = dynamic(
-  () => import('@/components/ui/AudioVisualizerStudio').then((mod) => mod.AudioVisualizerStudio),
+const GeminiPrismStudio = dynamic(
+  () => import('@/components/ui/GeminiPrismStudio').then((mod) => mod.GeminiPrismStudio),
   { ssr: false }
 );
 
 export default function Page() {
-  return <AudioVisualizerStudio />;
+  return <GeminiPrismStudio />;
 }

@@ -38,7 +38,14 @@
 
 ### Entry #004: Preventing Sharp Edges and Overlapping Stroke Intersections on Blob Orbs
 - **Date:** 2026-03-05
-- **Context:** Rendering parametric blob orbs (`orb` and `sparkle` modes) reacting to audio frequencies.
-- **Attempted Approach:** Connecting perimeter vertices with straight `ctx.lineTo` segments in a closed loop (`ctx.closePath()`).
+- **Context:** Rendering parametric blob orbs reacting to audio frequencies.
+- **Attempted Approach:** Connecting perimeter vertices with straight `ctx.lineTo` segments in a closed loop.
 - **Failure / Error Encountered:** At higher audio energy peaks, straight line segments crossed over themselves or formed sharp angular corner intersections.
-- **Verified Solution:** Implemented smooth quadratic bezier spline interpolation (`ctx.quadraticCurveTo`) between polygon midpoints and constrained deformation amplitudes, guaranteeing buttery-smooth organic fluid motion with zero harsh overlaps.
+- **Verified Solution:** Implemented smooth quadratic bezier spline interpolation (`ctx.quadraticCurveTo`) between polygon midpoints and constrained deformation amplitudes.
+
+### Entry #005: Gemini Multimodal Prism / Sparkle Bottom-Bar Glow & State Transitions
+- **Date:** 2026-03-05
+- **Context:** Reverse-engineering Google Gemini's bottom-bar glow and state-based animations (`idle`, `listening`, `thinking`, `speaking`).
+- **Attempted Approach:** Static solid orbs and standard waveform visualizers.
+- **Failure / Error Encountered:** Lacked the signature diffused bleeding-light gradient mesh and modal state behavior of Gemini.
+- **Verified Solution:** Implemented multi-layered soft radial gradient blobs positioned at the bottom viewport edge with `ctx.filter = 'blur(55px)'` and `globalCompositeOperation = 'screen'`, combined with trigonometric organic motion physics mapped to `idle`, `listening`, `thinking`, and `speaking` states.
