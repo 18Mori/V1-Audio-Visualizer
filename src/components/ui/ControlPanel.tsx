@@ -42,7 +42,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     { id: 'waves', label: 'Liquid Waves', icon: <Activity className="w-4 h-4" /> },
     { id: 'orb', label: 'Siri Orb', icon: <Radio className="w-4 h-4" /> },
     { id: 'bars', label: 'Neon Bars', icon: <BarChart2 className="w-4 h-4" /> },
-    { id: 'dna', label: 'DNA Helix', icon: <Dna className="w-4 h-4" /> },
+    { id: 'prism-loader', label: 'Gooey Prism', icon: <Sparkles className="w-4 h-4" /> },
     { id: 'sparkle', label: 'Gemini Sparkle', icon: <Sparkles className="w-4 h-4" /> },
   ];
 

@@ -113,29 +113,35 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
           ];
 
           layers.forEach((layer) => {
-            ctx.beginPath();
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 3.5;
             ctx.strokeStyle = layer.color;
-            ctx.shadowBlur = 15 + energy * 25;
+            ctx.shadowBlur = 20 + energy * 30;
             ctx.shadowColor = layer.color;
 
-            const sliceWidth = width / 100;
-            let x = 0;
+            const sliceWidth = width / 80;
+            const waveCoords: { x: number; y: number }[] = [];
 
-            for (let i = 0; i <= 100; i++) {
-              const freqIdx = Math.floor((i / 100) * (freq.length / 2));
+            for (let i = 0; i <= 80; i++) {
+              const freqIdx = Math.floor((i / 80) * (freq.length / 2));
               const localEnergy = smoothFreq[freqIdx] || energy;
 
-              const wave1 = Math.sin(i * 0.05 + phase * layer.speed + layer.offset);
-              const wave2 = Math.cos(i * 0.03 - phase * 0.8 + layer.offset);
+              const wave1 = Math.sin(i * 0.06 + phase * layer.speed + layer.offset);
+              const wave2 = Math.cos(i * 0.04 - phase * 0.7 + layer.offset);
               
-              const dynamicAmp = layer.amplitude * (0.2 + localEnergy * 1.8);
-              const y = centerY + (wave1 + wave2) * dynamicAmp * Math.sin((i / 100) * Math.PI); // Pinched at edges
+              const dynamicAmp = layer.amplitude * (0.3 + localEnergy * 2.0);
+              const y = centerY + (wave1 + wave2) * dynamicAmp * Math.sin((i / 80) * Math.PI); // Pinched at edges
 
-              if (i === 0) ctx.moveTo(x, y);
-              else ctx.lineTo(x, y);
+              waveCoords.push({ x: i * sliceWidth, y });
+            }
 
-              x += sliceWidth;
+            ctx.beginPath();
+            ctx.moveTo(waveCoords[0].x, waveCoords[0].y);
+            for (let i = 0; i < waveCoords.length - 1; i++) {
+              const p1 = waveCoords[i];
+              const p2 = waveCoords[i + 1];
+              const midX = (p1.x + p2.x) / 2;
+              const midY = (p1.y + p2.y) / 2;
+              ctx.quadraticCurveTo(p1.x, p1.y, midX, midY);
             }
             ctx.stroke();
             ctx.shadowBlur = 0; // Reset shadow for performance
@@ -247,50 +253,69 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
           break;
         }
 
-        case 'dna': {
-          // 3D Double Helix DNA Strand Mode
-          const nodes = 32;
-          const spacing = width / nodes;
-          const amp = height * 0.2 * (0.5 + energy * 1.5);
+        case 'prism-loader': {
+          // SVG / CSS Gooey Prism Loader High-Energy Audio-Reactive Mode
+          const baseSize = Math.min(width, height) * 0.32;
+          const size = baseSize * (1 + energy * 1.2);
 
-          for (let i = 0; i < nodes; i++) {
-            const x = i * spacing;
-            const freqIdx = Math.floor((i / nodes) * (freq.length / 2));
-            const localEnergy = smoothFreq[freqIdx] || energy;
+          ctx.save();
+          ctx.translate(centerX, centerY);
 
-            const angle1 = i * 0.2 + phase;
-            const angle2 = angle1 + Math.PI;
+          // 1. Audio-Reactive Pulsing Outer Glow Ring
+          const pulseR = size * (0.8 + energy * 0.8);
+          ctx.beginPath();
+          ctx.arc(0, 0, pulseR, 0, Math.PI * 2);
+          const outerGrad = ctx.createRadialGradient(0, 0, pulseR * 0.2, 0, 0, pulseR);
+          outerGrad.addColorStop(0, 'rgba(255, 191, 72, 0.4)');
+          outerGrad.addColorStop(0.6, 'rgba(190, 74, 29, 0.3)');
+          outerGrad.addColorStop(1, 'rgba(190, 74, 29, 0)');
+          ctx.fillStyle = outerGrad;
+          ctx.fill();
 
-            const y1 = centerY + Math.sin(angle1) * amp;
-            const y2 = centerY + Math.sin(angle2) * amp;
+          // 2. Rotating Gooey Polygonal Mesh (Audio-Reactive Speed & Scale)
+          const polygonCount = 7;
+          for (let i = 0; i < polygonCount; i++) {
+            ctx.save();
+            const rotDir = i % 2 === 0 ? 1 : -1;
+            const speed = (i + 1) * 0.35 * (1 + energy * 2.0); // Accelerates heavily with audio volume
+            ctx.rotate(phase * speed * rotDir + (i * Math.PI) / 3.5);
 
-            const size1 = 4 + Math.cos(angle1) * 3 + localEnergy * 6;
-            const size2 = 4 + Math.cos(angle2) * 3 + localEnergy * 6;
+            const freqIdx = Math.floor((i / polygonCount) * smoothFreq.length);
+            const freqAmp = smoothFreq[freqIdx] || energy;
+            const polyScale = size * (0.3 + freqAmp * 1.1);
 
-            // Connecting Strand
             ctx.beginPath();
-            ctx.strokeStyle = 'rgba(139, 92, 246, 0.3)';
-            ctx.lineWidth = 2;
-            ctx.moveTo(x, y1);
-            ctx.lineTo(x, y2);
-            ctx.stroke();
+            const sides = 3 + (i % 3); // Mixing triangles and polygons
+            for (let s = 0; s < sides; s++) {
+              const angle = (s / sides) * Math.PI * 2;
+              const vertexDeform = Math.sin(phase * 4 + s + i) * (freqAmp * 15);
+              const px = Math.cos(angle) * (polyScale + vertexDeform);
+              const py = Math.sin(angle) * (polyScale + vertexDeform);
+              if (s === 0) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
 
-            // Node 1
-            ctx.beginPath();
-            ctx.arc(x, y1, Math.max(1, size1), 0, Math.PI * 2);
-            ctx.fillStyle = '#06b6d4';
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#06b6d4';
+            // Gooey Blur & Gradient Fill responding to audio
+            ctx.filter = `blur(${6 + freqAmp * 14}px)`;
+            const polyGrad = ctx.createLinearGradient(-polyScale, -polyScale, polyScale, polyScale);
+            polyGrad.addColorStop(0.2, '#ffbf48');
+            polyGrad.addColorStop(0.8, '#be4a1d');
+            ctx.fillStyle = polyGrad;
             ctx.fill();
-
-            // Node 2
-            ctx.beginPath();
-            ctx.arc(x, y2, Math.max(1, size2), 0, Math.PI * 2);
-            ctx.fillStyle = '#ec4899';
-            ctx.shadowColor = '#ec4899';
-            ctx.fill();
+            ctx.restore();
           }
-          ctx.shadowBlur = 0;
+
+          // 3. Central Core Audio-Reactive Gold Ring
+          ctx.beginPath();
+          ctx.arc(0, 0, size * 0.28 * (1 + energy * 0.6), 0, Math.PI * 2);
+          ctx.strokeStyle = '#ffbf48';
+          ctx.lineWidth = 3 + energy * 4;
+          ctx.shadowBlur = 25 + energy * 30;
+          ctx.shadowColor = '#ffbf48';
+          ctx.stroke();
+
+          ctx.restore();
           break;
         }
 
