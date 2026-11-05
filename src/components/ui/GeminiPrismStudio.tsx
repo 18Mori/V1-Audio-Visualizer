@@ -1,14 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { VisualizerState } from '@/types/audio';
+import { VisualizerMode, VisualizerState } from '@/types/audio';
 import { useAudioAnalyser } from '@/hooks/useAudioAnalyser';
 import { GeminiGlowPrismCanvas } from '@/components/canvas/GeminiGlowPrismCanvas';
+import { AnimatedVisualizerCanvas } from '@/components/canvas/AnimatedVisualizerCanvas';
 import { ControlPanel } from '@/components/ui/ControlPanel';
 import { Sparkles, Mic, Brain, Volume2, Moon } from 'lucide-react';
 
 export const GeminiPrismStudio: React.FC = () => {
+  const [mode, setMode] = useState<VisualizerMode>('sparkle');
   const [state, setState] = useState<VisualizerState>('idle');
+  const [sensitivity, setSensitivity] = useState<number>(1.5);
   const [isHovered, setIsHovered] = useState(false);
   const [isPinnedOpen, setIsPinnedOpen] = useState(false);
 
@@ -40,16 +43,29 @@ export const GeminiPrismStudio: React.FC = () => {
 
   return (
     <div className="relative min-h-screen w-full bg-zinc-950 text-zinc-100 flex flex-col justify-between p-4 sm:p-8 overflow-hidden font-sans">
-      {/* Full-Screen Gemini Bottom Glow Prism Background */}
+      {/* Full-Screen Visualizer Canvas Background based on active mode */}
       <div className="absolute inset-0 z-0 w-full h-full">
-        <GeminiGlowPrismCanvas
-          state={state}
-          frequencyDataRef={frequencyDataRef}
-          timeDomainDataRef={timeDomainDataRef}
-          updateFrameData={updateFrameData}
-          isPlaying={isPlaying}
-          className="w-full h-full"
-        />
+        {mode === 'sparkle' ? (
+          <GeminiGlowPrismCanvas
+            state={state}
+            frequencyDataRef={frequencyDataRef}
+            timeDomainDataRef={timeDomainDataRef}
+            updateFrameData={updateFrameData}
+            isPlaying={isPlaying}
+            sensitivity={sensitivity}
+            className="w-full h-full"
+          />
+        ) : (
+          <AnimatedVisualizerCanvas
+            mode={mode}
+            frequencyDataRef={frequencyDataRef}
+            timeDomainDataRef={timeDomainDataRef}
+            updateFrameData={updateFrameData}
+            isPlaying={isPlaying}
+            sensitivity={sensitivity}
+            className="w-full h-full"
+          />
+        )}
       </div>
 
       {/* Header Bar */}
@@ -60,9 +76,9 @@ export const GeminiPrismStudio: React.FC = () => {
           </div>
           <div>
             <h1 className="text-lg sm:text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-yellow-300">
-              GEMINI <span className="text-zinc-300 font-normal">Prism Glow</span>
+              GEMINI <span className="text-zinc-300 font-normal">Prism & Visualizer</span>
             </h1>
-            <p className="text-[11px] text-zinc-400">Multimodal Sparkle & Bottom-Bar Mesh</p>
+            <p className="text-[11px] text-zinc-400">Multimodal Motion Engine</p>
           </div>
         </div>
 
@@ -109,10 +125,10 @@ export const GeminiPrismStudio: React.FC = () => {
               <Sparkles className="w-8 h-8 text-purple-400" />
             </div>
             <h2 className="text-xl font-bold text-zinc-100 mb-2">
-              Gemini Prism Active
+              Visualizer Ready
             </h2>
             <p className="text-sm text-zinc-300 leading-relaxed">
-              Select your state above or activate your microphone / upload music to see the multi-colored gradient mesh bottom glow react in real-time.
+              Switch visualizer presets below or activate your microphone / upload music to experience real-time audio reactivity.
             </p>
           </div>
         )}
@@ -132,8 +148,8 @@ export const GeminiPrismStudio: React.FC = () => {
           }`}
         >
           <ControlPanel
-            mode={'sparkle'}
-            setMode={() => {}}
+            mode={mode}
+            setMode={setMode}
             activeSource={activeSource}
             isPlaying={isPlaying}
             onStartMic={startMicrophone}
@@ -141,6 +157,8 @@ export const GeminiPrismStudio: React.FC = () => {
             onTogglePlayPause={togglePlayPause}
             onStop={stopAll}
             fileName={metadata?.name}
+            sensitivity={sensitivity}
+            setSensitivity={setSensitivity}
           />
         </div>
       </footer>

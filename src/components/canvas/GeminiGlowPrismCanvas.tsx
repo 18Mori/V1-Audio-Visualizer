@@ -9,6 +9,7 @@ interface GeminiGlowPrismCanvasProps {
   timeDomainDataRef: React.MutableRefObject<any>;
   updateFrameData: () => void;
   isPlaying: boolean;
+  sensitivity?: number;
   className?: string;
 }
 
@@ -18,6 +19,7 @@ export const GeminiGlowPrismCanvas: React.FC<GeminiGlowPrismCanvasProps> = ({
   timeDomainDataRef,
   updateFrameData,
   isPlaying,
+  sensitivity = 1.5,
   className = '',
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -76,17 +78,17 @@ export const GeminiGlowPrismCanvas: React.FC<GeminiGlowPrismCanvasProps> = ({
       const avg = sum / (freqLen || 1);
 
       // State-based target energy and speed multipliers
-      let targetEnergy = isPlaying ? avg / 255 : 0.1;
+      let targetEnergy = isPlaying ? (avg / 255) * sensitivity : 0.1;
       let speedMultiplier = 1.0;
 
       if (state === 'listening') {
-        targetEnergy = Math.max(0.3, targetEnergy * 1.5);
+        targetEnergy = Math.max(0.3, targetEnergy * 1.5 * sensitivity);
         speedMultiplier = 1.8;
       } else if (state === 'thinking') {
-        targetEnergy = 0.4 + Math.sin(Date.now() * 0.005) * 0.2;
+        targetEnergy = 0.4 + Math.sin(Date.now() * 0.005) * 0.2 * sensitivity;
         speedMultiplier = 2.5;
       } else if (state === 'speaking') {
-        targetEnergy = Math.max(0.2, avg / 200);
+        targetEnergy = Math.max(0.2, (avg / 200) * sensitivity);
         speedMultiplier = 2.0;
       } else {
         // idle

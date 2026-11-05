@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { VisualizerMode, AudioSourceType } from '@/types/audio';
-import { Mic, Upload, Play, Pause, Square, Activity, Radio, BarChart2, Dna, Sparkles } from 'lucide-react';
+import { Mic, Upload, Play, Pause, Square, Activity, Radio, BarChart2, Dna, Sparkles, Sliders } from 'lucide-react';
 
 interface ControlPanelProps {
   mode: VisualizerMode;
@@ -14,6 +14,8 @@ interface ControlPanelProps {
   onTogglePlayPause: () => void;
   onStop: () => void;
   fileName?: string;
+  sensitivity?: number;
+  setSensitivity?: (val: number) => void;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -26,6 +28,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onTogglePlayPause,
   onStop,
   fileName,
+  sensitivity = 1.5,
+  setSensitivity,
 }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,6 +102,23 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             />
           </label>
         </div>
+
+        {/* Audio Reactivity / Sensitivity Control */}
+        {setSensitivity && (
+          <div className="flex items-center gap-3 bg-zinc-800/40 border border-zinc-800 px-3 py-1.5 rounded-xl w-full sm:w-auto">
+            <Sliders className="w-4 h-4 text-violet-400 shrink-0" />
+            <span className="text-xs text-zinc-300 whitespace-nowrap">Sensitivity: <strong className="text-violet-400 font-mono">{sensitivity.toFixed(1)}x</strong></span>
+            <input
+              type="range"
+              min="0.5"
+              max="3.0"
+              step="0.1"
+              value={sensitivity}
+              onChange={(e) => setSensitivity(parseFloat(e.target.value))}
+              className="w-24 h-1.5 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-violet-500"
+            />
+          </div>
+        )}
 
         {/* Playback Controls (File Mode Active) */}
         {activeSource === 'file' && (

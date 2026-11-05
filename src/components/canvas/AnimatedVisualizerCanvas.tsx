@@ -5,10 +5,11 @@ import { VisualizerMode } from '@/types/audio';
 
 interface AnimatedVisualizerCanvasProps {
   mode: VisualizerMode;
-  frequencyDataRef: React.MutableRefObject<Uint8Array>;
-  timeDomainDataRef: React.MutableRefObject<Uint8Array>;
+  frequencyDataRef: React.MutableRefObject<any>;
+  timeDomainDataRef: React.MutableRefObject<any>;
   updateFrameData: () => void;
   isPlaying: boolean;
+  sensitivity?: number;
   className?: string;
 }
 
@@ -18,6 +19,7 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
   timeDomainDataRef,
   updateFrameData,
   isPlaying,
+  sensitivity = 1.5,
   className = '',
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -76,7 +78,7 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
         rawSum += freq[i];
       }
       const rawAvg = rawSum / (freq.length || 1);
-      const targetEnergy = isPlaying ? rawAvg / 255 : 0.05 + Math.sin(Date.now() * 0.0015) * 0.02; // Gentle breathing pulse when idle
+      const targetEnergy = isPlaying ? (rawAvg / 255) * sensitivity : 0.05 + Math.sin(Date.now() * 0.0015) * 0.02; // Gentle breathing pulse when idle
       
       // Butter-smooth damping factor (0.06 instead of 0.1) for organic, lag-free fluidity
       smoothedEnergyRef.current += (targetEnergy - smoothedEnergyRef.current) * 0.06;
@@ -85,7 +87,7 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
       // Smooth individual frequency bins with heavier damping
       const smoothFreq = smoothedFreqRef.current;
       for (let i = 0; i < smoothFreq.length; i++) {
-        const target = freq[i] ? freq[i] / 255 : 0.02;
+        const target = freq[i] ? (freq[i] / 255) * sensitivity : 0.02;
         smoothFreq[i] += (target - smoothFreq[i]) * 0.08;
       }
 
