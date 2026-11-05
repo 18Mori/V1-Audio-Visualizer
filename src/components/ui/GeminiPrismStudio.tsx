@@ -82,40 +82,44 @@ export const GeminiPrismStudio: React.FC = () => {
           </div>
         </div>
 
-        {/* State Selector Pill */}
-        <div className="hidden sm:flex items-center gap-1 backdrop-blur-md bg-zinc-900/60 border border-zinc-800/80 p-1.5 rounded-2xl shadow-xl">
+        {/* State Selector Pill (Only visible when Gemini Sparkle is active) */}
+        {mode === 'sparkle' && (
+          <div className="hidden sm:flex items-center gap-1 backdrop-blur-md bg-zinc-900/60 border border-zinc-800/80 p-1.5 rounded-2xl shadow-xl animate-fade-in">
+            {stateButtons.map((btn) => (
+              <button
+                key={btn.id}
+                onClick={() => setState(btn.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                  state === btn.id
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                }`}
+              >
+                {btn.icon}
+                <span className="capitalize">{btn.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </header>
+
+      {/* Mobile State Selector (Only visible when Gemini Sparkle is active) */}
+      {mode === 'sparkle' && (
+        <div className="relative z-10 sm:hidden flex justify-center gap-1 my-2">
           {stateButtons.map((btn) => (
             <button
               key={btn.id}
               onClick={() => setState(btn.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                state === btn.id
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+              className={`p-2 rounded-xl text-xs ${
+                state === btn.id ? 'bg-purple-600 text-white' : 'bg-zinc-900 text-zinc-400'
               }`}
+              title={btn.label}
             >
               {btn.icon}
-              <span className="capitalize">{btn.label}</span>
             </button>
           ))}
         </div>
-      </header>
-
-      {/* Mobile State Selector */}
-      <div className="relative z-10 sm:hidden flex justify-center gap-1 my-2">
-        {stateButtons.map((btn) => (
-          <button
-            key={btn.id}
-            onClick={() => setState(btn.id)}
-            className={`p-2 rounded-xl text-xs ${
-              state === btn.id ? 'bg-purple-600 text-white' : 'bg-zinc-900 text-zinc-400'
-            }`}
-            title={btn.label}
-          >
-            {btn.icon}
-          </button>
-        ))}
-      </div>
+      )}
 
       {/* Main Studio Center Area */}
       <main className="relative z-10 w-full max-w-6xl mx-auto flex-1 flex flex-col items-center justify-center pointer-events-none">
