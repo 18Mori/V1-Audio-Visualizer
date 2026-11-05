@@ -29,7 +29,7 @@ export const AudioVisualizerStudio: React.FC = () => {
     smoothingTimeConstant: 0.85,
   });
 
-  // When music starts playing, auto-unpin so panel tucks away cleanly
+  // When music starts playing, auto-unpin so panel tucks away cleanly on desktop
   useEffect(() => {
     if (isPlaying && activeSource !== 'idle') {
       const timer = setTimeout(() => {
@@ -111,10 +111,10 @@ export const AudioVisualizerStudio: React.FC = () => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Floating Arrow Notch (Always interactive at the bottom edge) */}
+        {/* Floating Arrow Notch (Visible ONLY on Mobile / Touch screens) */}
         <button
           onClick={() => setIsPinnedOpen((prev) => !prev)}
-          className={`pointer-events-auto mb-2 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 text-zinc-200 hover:text-white text-xs font-medium shadow-2xl transition-all duration-500 ease-out hover:scale-105 group cursor-pointer ${
+          className={`pointer-events-auto mb-2 flex sm:hidden items-center gap-1.5 px-4 py-1.5 rounded-full bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 text-zinc-200 hover:text-white text-xs font-medium shadow-2xl transition-all duration-500 ease-out hover:scale-105 group cursor-pointer ${
             showPanel ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-90'
           }`}
           title={isPinnedOpen ? 'Hide Controls' : 'Show Controls'}
@@ -127,7 +127,7 @@ export const AudioVisualizerStudio: React.FC = () => {
           )}
         </button>
 
-        {/* Sliding Control Panel Drawer */}
+        {/* Sliding Control Panel Drawer (Reveals on bottom hover for Desktop, or notch click on Mobile) */}
         <div
           className={`w-full max-w-4xl transition-all duration-500 ease-out transform pointer-events-auto ${
             showPanel
