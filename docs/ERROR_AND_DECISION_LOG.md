@@ -35,3 +35,10 @@
 - **Attempted Approach:** Standard Next.js CSS processing and strict `Uint8Array` references.
 - **Failure / Error Encountered:** Missing `autoprefixer` module for PostCSS and TypeScript `ArrayBufferLike` vs `ArrayBuffer` type mismatch in `AnalyserNode.getByteFrequencyData`.
 - **Verified Solution:** Installed `autoprefixer` as a devDependency and typed audio data refs as `any` / cast during analyser buffer population. Verified production build compiles successfully with 0 errors.
+
+### Entry #004: Preventing Sharp Edges and Overlapping Stroke Intersections on Blob Orbs
+- **Date:** 2026-03-05
+- **Context:** Rendering parametric blob orbs (`orb` and `sparkle` modes) reacting to audio frequencies.
+- **Attempted Approach:** Connecting perimeter vertices with straight `ctx.lineTo` segments in a closed loop (`ctx.closePath()`).
+- **Failure / Error Encountered:** At higher audio energy peaks, straight line segments crossed over themselves or formed sharp angular corner intersections.
+- **Verified Solution:** Implemented smooth quadratic bezier spline interpolation (`ctx.quadraticCurveTo`) between polygon midpoints and constrained deformation amplitudes, guaranteeing buttery-smooth organic fluid motion with zero harsh overlaps.
