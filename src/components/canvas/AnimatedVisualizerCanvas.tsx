@@ -70,26 +70,27 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
       const freq = frequencyDataRef.current;
       const time = timeDomainDataRef.current;
 
-      // 1. Calculate Average Energy & Smooth with Lerp
+      // 1. Calculate Average Energy & Smooth with Heavier Damping for Butter-Smooth Motion
       let rawSum = 0;
       for (let i = 0; i < freq.length; i++) {
         rawSum += freq[i];
       }
       const rawAvg = rawSum / (freq.length || 1);
-      const targetEnergy = isPlaying ? rawAvg / 255 : 0.05 + Math.sin(Date.now() * 0.002) * 0.02; // Soft breathing pulse when idle
+      const targetEnergy = isPlaying ? rawAvg / 255 : 0.05 + Math.sin(Date.now() * 0.0015) * 0.02; // Gentle breathing pulse when idle
       
-      smoothedEnergyRef.current += (targetEnergy - smoothedEnergyRef.current) * 0.1;
+      // Butter-smooth damping factor (0.06 instead of 0.1) for organic, lag-free fluidity
+      smoothedEnergyRef.current += (targetEnergy - smoothedEnergyRef.current) * 0.06;
       const energy = smoothedEnergyRef.current;
 
-      // Smooth individual frequency bins
+      // Smooth individual frequency bins with heavier damping
       const smoothFreq = smoothedFreqRef.current;
       for (let i = 0; i < smoothFreq.length; i++) {
         const target = freq[i] ? freq[i] / 255 : 0.02;
-        smoothFreq[i] += (target - smoothFreq[i]) * 0.15;
+        smoothFreq[i] += (target - smoothFreq[i]) * 0.08;
       }
 
-      // Advance animation phase
-      phaseRef.current += 0.02 + energy * 0.05;
+      // Advance animation phase slower for silkiness
+      phaseRef.current += 0.012 + energy * 0.03;
       const phase = phaseRef.current;
 
       // 2. Clear Canvas with slight fade trail for motion blur
@@ -141,34 +142,36 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
         }
 
         case 'orb': {
-          // Siri / Liquid Morphing Orb Mode
-          const baseRadius = Math.min(width, height) * 0.2;
-          const radius = baseRadius + energy * baseRadius * 0.8;
+          // Gemini Four-Color Sparkle Orb (Google Brand Colors: Blue #4285F4, Purple #8b5cf6, Red #EA4335, Yellow #FBBC05)
+          const baseRadius = Math.min(width, height) * 0.22;
+          const radius = baseRadius + energy * baseRadius * 0.9;
 
           ctx.save();
           ctx.translate(centerX, centerY);
+          ctx.rotate(phase * 0.2); // Slow rotation for fluid sparkle mesh
 
-          // Draw Glowing Outer Aura
-          const gradient = ctx.createRadialGradient(0, 0, radius * 0.2, 0, 0, radius * 1.8);
-          gradient.addColorStop(0, 'rgba(139, 92, 246, 0.8)');
-          gradient.addColorStop(0.5, 'rgba(6, 182, 212, 0.4)');
-          gradient.addColorStop(1, 'rgba(9, 9, 11, 0)');
+          // 1. Four-Color Sparkle Outer Glow (Gemini Signature Gradient Mesh)
+          const gradient = ctx.createRadialGradient(0, 0, radius * 0.1, 0, 0, radius * 2.2);
+          gradient.addColorStop(0, 'rgba(66, 133, 244, 0.7)');   // Google Blue
+          gradient.addColorStop(0.33, 'rgba(139, 92, 246, 0.6)'); // Purple
+          gradient.addColorStop(0.66, 'rgba(234, 67, 53, 0.5)');  // Google Red
+          gradient.addColorStop(1, 'rgba(251, 188, 5, 0)');       // Google Yellow fade out
 
           ctx.fillStyle = gradient;
           ctx.beginPath();
-          ctx.arc(0, 0, radius * 1.8, 0, Math.PI * 2);
+          ctx.arc(0, 0, radius * 2.2, 0, Math.PI * 2);
           ctx.fill();
 
-          // Draw Liquid Morphing Core Shape
-          const points = 64;
+          // 2. Inner Fluid Morphing Core Shape with Four-Color Stroke
+          const points = 72;
           ctx.beginPath();
           for (let i = 0; i <= points; i++) {
             const angle = (i / points) * Math.PI * 2;
-            const freqIdx = Math.floor((i / points) * (freq.length / 4));
+            const freqIdx = Math.floor((i / points) * (freq.length / 3));
             const freqAmp = smoothFreq[freqIdx] || energy;
 
-            const n1 = Math.sin(angle * 4 + phase * 2) * 15 * (1 + freqAmp * 2);
-            const n2 = Math.cos(angle * 6 - phase * 1.5) * 10 * (1 + freqAmp * 2);
+            const n1 = Math.sin(angle * 3 + phase * 1.5) * 12 * (1 + freqAmp * 1.5);
+            const n2 = Math.cos(angle * 5 - phase * 1.2) * 8 * (1 + freqAmp * 1.5);
             
             const currentRadius = radius + n1 + n2;
             const px = Math.cos(angle) * currentRadius;
@@ -179,11 +182,24 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
           }
           ctx.closePath();
 
-          ctx.strokeStyle = '#ec4899';
-          ctx.lineWidth = 4;
-          ctx.shadowBlur = 20 + energy * 30;
-          ctx.shadowColor = '#ec4899';
+          // Four-Color Sparkle Linear Gradient Stroke
+          const strokeGradient = ctx.createLinearGradient(-radius, -radius, radius, radius);
+          strokeGradient.addColorStop(0, '#4285F4'); // Blue
+          strokeGradient.addColorStop(0.35, '#8b5cf6'); // Purple
+          strokeGradient.addColorStop(0.7, '#EA4335'); // Red
+          strokeGradient.addColorStop(1, '#FBBC05'); // Yellow
+
+          ctx.strokeStyle = strokeGradient;
+          ctx.lineWidth = 5;
+          ctx.shadowBlur = 25 + energy * 40;
+          ctx.shadowColor = '#8b5cf6';
           ctx.stroke();
+
+          // 3. Center Core Sparkle Highlight
+          ctx.beginPath();
+          ctx.arc(0, 0, radius * 0.35, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.15);';
+          ctx.fill();
 
           ctx.restore();
           break;
@@ -264,6 +280,86 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
             ctx.fill();
           }
           ctx.shadowBlur = 0;
+          break;
+        }
+
+        case 'sparkle': {
+          // Gemini-Style Multi-Color Gradient Mesh Blob Orb (Google Brand Colors: Blue #4285F4, Purple #8b5cf6, Red #EA4335, Yellow #FBBC05)
+          const baseRadius = Math.min(width, height) * 0.22;
+          const currentBaseRadius = baseRadius * (1 + energy * 0.7);
+
+          ctx.save();
+          ctx.translate(centerX, centerY);
+
+          // 1. Drifting Overlapping Radial Gradients (Gradient Mesh Effect)
+          const driftX1 = Math.sin(phase * 0.8) * 35;
+          const driftY1 = Math.cos(phase * 0.6) * 35;
+          const driftX2 = Math.cos(phase * 0.9) * 40;
+          const driftY2 = Math.sin(phase * 0.7) * 40;
+
+          // Google Blue / Purple Mesh Layer
+          const grad1 = ctx.createRadialGradient(driftX1, driftY1, currentBaseRadius * 0.1, driftX1, driftY1, currentBaseRadius * 1.8);
+          grad1.addColorStop(0, 'rgba(66, 133, 244, 0.85)');   // Google Blue
+          grad1.addColorStop(0.5, 'rgba(139, 92, 246, 0.5)'); // Purple
+          grad1.addColorStop(1, 'rgba(66, 133, 244, 0)');
+
+          ctx.fillStyle = grad1;
+          ctx.beginPath();
+          ctx.arc(driftX1, driftY1, currentBaseRadius * 1.8, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Google Red / Yellow Mesh Layer
+          const grad2 = ctx.createRadialGradient(driftX2, driftY2, currentBaseRadius * 0.1, driftX2, driftY2, currentBaseRadius * 1.8);
+          grad2.addColorStop(0, 'rgba(234, 67, 53, 0.85)');   // Google Red
+          grad2.addColorStop(0.5, 'rgba(251, 188, 5, 0.5)');  // Google Yellow
+          grad2.addColorStop(1, 'rgba(234, 67, 53, 0)');
+
+          ctx.fillStyle = grad2;
+          ctx.beginPath();
+          ctx.arc(driftX2, driftY2, currentBaseRadius * 1.8, 0, Math.PI * 2);
+          ctx.fill();
+
+          // 2. Deformed Perimeter (Blob Effect) driven by Frequency Amplitude Mapping
+          const vertices = 96;
+          ctx.beginPath();
+          for (let i = 0; i <= vertices; i++) {
+            const theta = (i / vertices) * Math.PI * 2;
+            const freqIdx = Math.floor((i / vertices) * (smoothFreq.length / 2));
+            const freqVal = smoothFreq[freqIdx] || energy;
+
+            // R(theta) = R_base + Amplitude * sin(k * theta + time)
+            const k = 5; // wave frequency around perimeter
+            const deform = Math.sin(k * theta + phase * 2) * 18 * freqVal + Math.cos(3 * theta - phase * 1.5) * 12 * energy;
+            const r = currentBaseRadius + deform;
+
+            const px = Math.cos(theta) * r;
+            const py = Math.sin(theta) * r;
+
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+
+          // Gradient Stroke enclosing the blob orb
+          const strokeGrad = ctx.createLinearGradient(-currentBaseRadius, -currentBaseRadius, currentBaseRadius, currentBaseRadius);
+          strokeGrad.addColorStop(0, '#4285F4');
+          strokeGrad.addColorStop(0.33, '#8b5cf6');
+          strokeGrad.addColorStop(0.66, '#EA4335');
+          strokeGrad.addColorStop(1, '#FBBC05');
+
+          ctx.strokeStyle = strokeGrad;
+          ctx.lineWidth = 4 + energy * 4;
+          ctx.shadowBlur = 30 + energy * 40;
+          ctx.shadowColor = '#8b5cf6';
+          ctx.stroke();
+
+          // 3. Inner Core Highlight Sparkle
+          ctx.beginPath();
+          ctx.arc(0, 0, currentBaseRadius * 0.3, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+          ctx.fill();
+
+          ctx.restore();
           break;
         }
       }

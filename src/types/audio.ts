@@ -1,4 +1,4 @@
-export type VisualizerMode = 'waves' | 'orb' | 'bars' | 'dna';
+export type VisualizerMode = 'waves' | 'orb' | 'bars' | 'dna' | 'sparkle';
 
 export type AudioSourceType = 'mic' | 'file' | 'idle';
 

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { VisualizerMode, AudioSourceType } from '@/types/audio';
-import { Mic, Upload, Play, Pause, Square, Activity, Radio, BarChart2, Dna } from 'lucide-react';
+import { Mic, Upload, Play, Pause, Square, Activity, Radio, BarChart2, Dna, Sparkles } from 'lucide-react';
 
 interface ControlPanelProps {
   mode: VisualizerMode;
@@ -39,6 +39,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     { id: 'orb', label: 'Siri Orb', icon: <Radio className="w-4 h-4" /> },
     { id: 'bars', label: 'Neon Bars', icon: <BarChart2 className="w-4 h-4" /> },
     { id: 'dna', label: 'DNA Helix', icon: <Dna className="w-4 h-4" /> },
+    { id: 'sparkle', label: 'Gemini Sparkle', icon: <Sparkles className="w-4 h-4" /> },
   ];
 
   return (
