@@ -162,23 +162,32 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
           ctx.arc(0, 0, radius * 2.2, 0, Math.PI * 2);
           ctx.fill();
 
-          // 2. Inner Fluid Morphing Core Shape with Four-Color Stroke
+          // 2. Inner Fluid Morphing Core Shape with Smooth Quadratic Splines
           const points = 72;
-          ctx.beginPath();
-          for (let i = 0; i <= points; i++) {
+          const coords: { x: number; y: number }[] = [];
+          for (let i = 0; i < points; i++) {
             const angle = (i / points) * Math.PI * 2;
             const freqIdx = Math.floor((i / points) * (freq.length / 3));
             const freqAmp = smoothFreq[freqIdx] || energy;
 
-            const n1 = Math.sin(angle * 3 + phase * 1.5) * 12 * (1 + freqAmp * 1.5);
-            const n2 = Math.cos(angle * 5 - phase * 1.2) * 8 * (1 + freqAmp * 1.5);
+            const n1 = Math.sin(angle * 3 + phase * 1.5) * 10 * (1 + freqAmp * 1.2);
+            const n2 = Math.cos(angle * 5 - phase * 1.2) * 6 * (1 + freqAmp * 1.2);
             
             const currentRadius = radius + n1 + n2;
-            const px = Math.cos(angle) * currentRadius;
-            const py = Math.sin(angle) * currentRadius;
+            coords.push({
+              x: Math.cos(angle) * currentRadius,
+              y: Math.sin(angle) * currentRadius,
+            });
+          }
 
-            if (i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
+          ctx.beginPath();
+          ctx.moveTo(coords[0].x, coords[0].y);
+          for (let i = 0; i < coords.length; i++) {
+            const p1 = coords[i];
+            const p2 = coords[(i + 1) % coords.length];
+            const midX = (p1.x + p2.x) / 2;
+            const midY = (p1.y + p2.y) / 2;
+            ctx.quadraticCurveTo(p1.x, p1.y, midX, midY);
           }
           ctx.closePath();
 
@@ -319,24 +328,32 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
           ctx.arc(driftX2, driftY2, currentBaseRadius * 1.8, 0, Math.PI * 2);
           ctx.fill();
 
-          // 2. Deformed Perimeter (Blob Effect) driven by Frequency Amplitude Mapping
-          const vertices = 96;
-          ctx.beginPath();
-          for (let i = 0; i <= vertices; i++) {
+          // 2. Deformed Perimeter (Blob Effect) with Smooth Quadratic Splines
+          const vertices = 72;
+          const sparkleCoords: { x: number; y: number }[] = [];
+          for (let i = 0; i < vertices; i++) {
             const theta = (i / vertices) * Math.PI * 2;
             const freqIdx = Math.floor((i / vertices) * (smoothFreq.length / 2));
             const freqVal = smoothFreq[freqIdx] || energy;
 
-            // R(theta) = R_base + Amplitude * sin(k * theta + time)
-            const k = 5; // wave frequency around perimeter
-            const deform = Math.sin(k * theta + phase * 2) * 18 * freqVal + Math.cos(3 * theta - phase * 1.5) * 12 * energy;
+            const k = 4; // gentle wave frequency
+            const deform = Math.sin(k * theta + phase * 1.5) * 12 * freqVal + Math.cos(2 * theta - phase) * 8 * energy;
             const r = currentBaseRadius + deform;
 
-            const px = Math.cos(theta) * r;
-            const py = Math.sin(theta) * r;
+            sparkleCoords.push({
+              x: Math.cos(theta) * r,
+              y: Math.sin(theta) * r,
+            });
+          }
 
-            if (i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
+          ctx.beginPath();
+          ctx.moveTo(sparkleCoords[0].x, sparkleCoords[0].y);
+          for (let i = 0; i < sparkleCoords.length; i++) {
+            const p1 = sparkleCoords[i];
+            const p2 = sparkleCoords[(i + 1) % sparkleCoords.length];
+            const midX = (p1.x + p2.x) / 2;
+            const midY = (p1.y + p2.y) / 2;
+            ctx.quadraticCurveTo(p1.x, p1.y, midX, midY);
           }
           ctx.closePath();
 
