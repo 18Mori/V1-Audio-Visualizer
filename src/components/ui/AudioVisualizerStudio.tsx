@@ -9,7 +9,8 @@ import { Sparkles, AlertCircle, ChevronUp, ChevronDown } from 'lucide-react';
 
 export const AudioVisualizerStudio: React.FC = () => {
   const [mode, setMode] = useState<VisualizerMode>('waves');
-  const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isPinnedOpen, setIsPinnedOpen] = useState(false);
 
   const {
     activeSource,
@@ -28,17 +29,17 @@ export const AudioVisualizerStudio: React.FC = () => {
     smoothingTimeConstant: 0.85,
   });
 
-  // Auto-collapse panel after 4 seconds of playback to let the canvas shine
+  // When music starts playing, auto-unpin so panel tucks away cleanly
   useEffect(() => {
     if (isPlaying && activeSource !== 'idle') {
       const timer = setTimeout(() => {
-        setIsPanelOpen(false);
-      }, 4000);
+        setIsPinnedOpen(false);
+      }, 3000);
       return () => clearTimeout(timer);
-    } else {
-      setIsPanelOpen(true);
     }
   }, [isPlaying, activeSource]);
+
+  const showPanel = isHovered || isPinnedOpen;
 
   return (
     <div className="relative min-h-screen w-full bg-zinc-950 text-zinc-100 flex flex-col justify-between p-4 sm:p-8 overflow-hidden font-sans">
@@ -104,31 +105,34 @@ export const AudioVisualizerStudio: React.FC = () => {
         )}
       </main>
 
-      {/* Bottom Collapsible Control Drawer with Hover/Click Notch */}
+      {/* Bottom Hover Zone & Collapsible Drawer */}
       <footer 
-        className="relative z-20 w-full flex flex-col items-center pb-4 px-2"
-        onMouseEnter={() => setIsPanelOpen(true)}
+        className="fixed bottom-0 left-0 right-0 z-30 flex flex-col items-center pb-3 px-2 pointer-events-none"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Floating Arrow Notch Toggle */}
+        {/* Floating Arrow Notch (Always interactive at the bottom edge) */}
         <button
-          onClick={() => setIsPanelOpen((prev) => !prev)}
-          className="mb-2 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 text-zinc-300 hover:text-white text-xs font-medium shadow-2xl transition-all duration-300 hover:scale-105 group cursor-pointer"
-          title={isPanelOpen ? 'Collapse Controls' : 'Expand Controls'}
+          onClick={() => setIsPinnedOpen((prev) => !prev)}
+          className={`pointer-events-auto mb-2 flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 text-zinc-200 hover:text-white text-xs font-medium shadow-2xl transition-all duration-500 ease-out hover:scale-105 group cursor-pointer ${
+            showPanel ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-90'
+          }`}
+          title={isPinnedOpen ? 'Hide Controls' : 'Show Controls'}
         >
-          <span>{isPanelOpen ? 'Hide Controls' : 'Audio Controls'}</span>
-          {isPanelOpen ? (
+          <span>{showPanel ? 'Hide Controls' : 'Audio Controls'}</span>
+          {showPanel ? (
             <ChevronDown className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white transition-transform" />
           ) : (
             <ChevronUp className="w-3.5 h-3.5 text-violet-400 group-hover:text-white transition-transform animate-bounce" />
           )}
         </button>
 
-        {/* Sliding Panel */}
+        {/* Sliding Control Panel Drawer */}
         <div
-          className={`w-full max-w-4xl transition-all duration-500 ease-out transform ${
-            isPanelOpen
-              ? 'translate-y-0 opacity-100 scale-100 pointer-events-auto'
-              : 'translate-y-12 opacity-0 scale-95 pointer-events-none'
+          className={`w-full max-w-4xl transition-all duration-500 ease-out transform pointer-events-auto ${
+            showPanel
+              ? 'translate-y-0 opacity-100 scale-100'
+              : 'translate-y-24 opacity-0 scale-95 pointer-events-none'
           }`}
         >
           <ControlPanel
