@@ -320,25 +320,26 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
         }
 
         case 'perimeter-shimmer': {
-          // Lava Lamp Perimeter Fluid Current (Continuously circulating edge-hugging glowing plasma blobs)
+          // High-Density Lava Lamp Perimeter Fluid Current (28 Circulating Nodes)
           ctx.save();
           ctx.globalCompositeOperation = 'screen';
-          ctx.filter = 'blur(45px)'; // Soft lava lamp diffusion blur
+          ctx.filter = 'blur(35px)'; // Crisp yet glowing lava diffusion
 
           const lavaColors = [
-            { r: 79, g: 70, b: 229 },   // Indigo (Blue)
+            { r: 79, g: 70, b: 229 },   // Indigo
             { r: 66, g: 133, b: 244 },  // Google Blue
             { r: 147, g: 51, b: 234 },  // Violet
             { r: 192, g: 38, b: 211 },  // Fuchsia
+            { r: 236, g: 72, b: 153 },  // Pink
             { r: 244, g: 63, b: 94 },   // Coral Red
             { r: 234, g: 179, b: 8 },   // Electric Yellow
+            { r: 6, g: 182, b: 212 },   // Cyan
           ];
 
-          const lavaIntensity = 0.25 + energy * 1.3;
-          const blobCount = 10;
-          const totalPerimeterLength = (width + height) * 2;
+          const lavaIntensity = 0.2 + energy * 1.5;
+          const blobCount = 28; // High density circulating lava nodes
 
-          // Helper to map progress [0, 1] to exact perimeter X, Y coordinates
+          // Helper to map progress [0, 1] to exact perimeter X, Y coordinates hugging the edges
           const getPerimeterCoord = (p: number) => {
             const normalizedP = ((p % 1) + 1) % 1;
             const w = width;
@@ -351,31 +352,33 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
             const dist = normalizedP * total;
 
             if (dist <= topW) {
-              return { x: dist, y: -15 };
+              return { x: dist, y: -10 };
             } else if (dist <= topW + rightH) {
-              return { x: w + 15, y: dist - topW };
+              return { x: w + 10, y: dist - topW };
             } else if (dist <= topW + rightH + bottomW) {
-              return { x: w - (dist - (topW + rightH)), y: h + 15 };
+              return { x: w - (dist - (topW + rightH)), y: h + 10 };
             } else {
-              return { x: -15, y: h - (dist - (topW + rightH + bottomW)) };
+              return { x: -10, y: h - (dist - (topW + rightH + bottomW)) };
             }
           };
 
           for (let i = 0; i < blobCount; i++) {
             const col = lavaColors[i % lavaColors.length];
-            // Continuous circulation speed influenced by audio energy
-            const speed = 0.08 + (i % 3) * 0.02;
+            // Varied circulation speeds for rich fluid layering
+            const speed = 0.04 + (i % 5) * 0.015;
             const baseProgress = i / blobCount;
-            const currentProgress = baseProgress + (phase * speed * (0.5 + energy * 1.5));
+            const currentProgress = baseProgress + (phase * speed * (0.6 + energy * 2.0));
 
             const coord = getPerimeterCoord(currentProgress);
             
             // Organic lava pulsing & bubbling offset
-            const bubbleOffset = Math.sin(phase * 3 + i) * 15 * lavaIntensity;
+            const bubbleOffset = Math.sin(phase * 4 + i * 0.5) * 12 * lavaIntensity;
             const cx = coord.x + (coord.y <= 0 || coord.y >= height ? bubbleOffset : 0);
             const cy = coord.y + (coord.x <= 0 || coord.x >= width ? bubbleOffset : 0);
 
-            const blobRadius = Math.min(width, height) * 0.16 * (0.6 + lavaIntensity * 0.8 + Math.sin(phase * 2 + i) * 0.25);
+            // Size diversity: mix of large lava blobs and smaller glowing nodes
+            const sizeMultiplier = 0.08 + (i % 4) * 0.03;
+            const blobRadius = Math.min(width, height) * sizeMultiplier * (0.7 + lavaIntensity * 0.9 + Math.sin(phase * 3 + i) * 0.3);
 
             const grad = ctx.createRadialGradient(cx, cy, blobRadius * 0.05, cx, cy, blobRadius);
             grad.addColorStop(0, `rgba(${col.r}, ${col.g}, ${col.b}, ${0.5 + lavaIntensity * 0.4})`);
