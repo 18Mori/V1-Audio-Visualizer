@@ -320,49 +320,73 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
         }
 
         case 'perimeter-shimmer': {
-          // Gemini Edge Plasma / Fire Glow (Additive Edge-Hugging Color Licks)
+          // Lava Lamp Perimeter Fluid Current (Continuously circulating edge-hugging glowing plasma blobs)
           ctx.save();
           ctx.globalCompositeOperation = 'screen';
-          ctx.filter = 'blur(60px)'; // Heavy diffused organic fire blur
+          ctx.filter = 'blur(45px)'; // Soft lava lamp diffusion blur
 
-          const edgeColors = [
+          const lavaColors = [
+            { r: 79, g: 70, b: 229 },   // Indigo (Blue)
             { r: 66, g: 133, b: 244 },  // Google Blue
-            { r: 147, g: 51, b: 234 },  // Vibrant Violet
-            { r: 236, g: 72, b: 153 },  // Fuchsia
-            { r: 234, g: 67, b: 53 },   // Coral Red
-            { r: 251, g: 188, b: 5 },   // Electric Yellow
+            { r: 147, g: 51, b: 234 },  // Violet
+            { r: 192, g: 38, b: 211 },  // Fuchsia
+            { r: 244, g: 63, b: 94 },   // Coral Red
+            { r: 234, g: 179, b: 8 },   // Electric Yellow
           ];
 
-          const flameCount = edgeColors.length;
-          const fireIntensity = 0.5 + energy * 2.5;
+          const lavaIntensity = 0.25 + energy * 1.3;
+          const blobCount = 10;
+          const totalPerimeterLength = (width + height) * 2;
 
-          edgeColors.forEach((col, idx) => {
-            const angle = (idx / flameCount) * Math.PI * 2 + phase * 0.5;
-            const waveX = Math.sin(phase * 1.2 + idx) * (width * 0.3);
-            const waveY = Math.cos(phase * 0.9 + idx * 2) * (height * 0.2);
+          // Helper to map progress [0, 1] to exact perimeter X, Y coordinates
+          const getPerimeterCoord = (p: number) => {
+            const normalizedP = ((p % 1) + 1) % 1;
+            const w = width;
+            const h = height;
+            const topW = w;
+            const rightH = h;
+            const bottomW = w;
+            const leftH = h;
+            const total = topW + rightH + bottomW + leftH;
+            const dist = normalizedP * total;
 
-            // Distribute flame emitter points along the 4 edges of the screen
-            let cx = width / 2 + waveX;
-            let cy = height / 2 + waveY;
+            if (dist <= topW) {
+              return { x: dist, y: -15 };
+            } else if (dist <= topW + rightH) {
+              return { x: w + 15, y: dist - topW };
+            } else if (dist <= topW + rightH + bottomW) {
+              return { x: w - (dist - (topW + rightH)), y: h + 15 };
+            } else {
+              return { x: -15, y: h - (dist - (topW + rightH + bottomW)) };
+            }
+          };
 
-            if (idx === 0) { cx = width * 0.25 + waveX; cy = -20; }       // Top Edge
-            else if (idx === 1) { cx = width * 0.75 + waveX; cy = height + 20; } // Bottom Edge
-            else if (idx === 2) { cx = -20; cy = height * 0.3 + waveY; }        // Left Edge
-            else if (idx === 3) { cx = width + 20; cy = height * 0.7 + waveY; }  // Right Edge
-            else { cx = width / 2 + waveX; cy = height / 2 + waveY; }           // Center Core Lick
+          for (let i = 0; i < blobCount; i++) {
+            const col = lavaColors[i % lavaColors.length];
+            // Continuous circulation speed influenced by audio energy
+            const speed = 0.08 + (i % 3) * 0.02;
+            const baseProgress = i / blobCount;
+            const currentProgress = baseProgress + (phase * speed * (0.5 + energy * 1.5));
 
-            const flameRadius = Math.max(width, height) * 0.35 * (0.8 + fireIntensity * 0.8 + Math.sin(phase * 2 + idx) * 0.3);
+            const coord = getPerimeterCoord(currentProgress);
+            
+            // Organic lava pulsing & bubbling offset
+            const bubbleOffset = Math.sin(phase * 3 + i) * 15 * lavaIntensity;
+            const cx = coord.x + (coord.y <= 0 || coord.y >= height ? bubbleOffset : 0);
+            const cy = coord.y + (coord.x <= 0 || coord.x >= width ? bubbleOffset : 0);
 
-            const radialGrad = ctx.createRadialGradient(cx, cy, flameRadius * 0.05, cx, cy, flameRadius);
-            radialGrad.addColorStop(0, `rgba(${col.r}, ${col.g}, ${col.b}, ${0.6 + fireIntensity * 0.3})`);
-            radialGrad.addColorStop(0.5, `rgba(${col.r}, ${col.g}, ${col.b}, ${0.25 + fireIntensity * 0.2})`);
-            radialGrad.addColorStop(1, `rgba(${col.r}, ${col.g}, ${col.b}, 0)`);
+            const blobRadius = Math.min(width, height) * 0.16 * (0.6 + lavaIntensity * 0.8 + Math.sin(phase * 2 + i) * 0.25);
 
-            ctx.fillStyle = radialGrad;
+            const grad = ctx.createRadialGradient(cx, cy, blobRadius * 0.05, cx, cy, blobRadius);
+            grad.addColorStop(0, `rgba(${col.r}, ${col.g}, ${col.b}, ${0.5 + lavaIntensity * 0.4})`);
+            grad.addColorStop(0.5, `rgba(${col.r}, ${col.g}, ${col.b}, ${0.2 + lavaIntensity * 0.2})`);
+            grad.addColorStop(1, `rgba(${col.r}, ${col.g}, ${col.b}, 0)`);
+
+            ctx.fillStyle = grad;
             ctx.beginPath();
-            ctx.arc(cx, cy, flameRadius, 0, Math.PI * 2);
+            ctx.arc(cx, cy, blobRadius, 0, Math.PI * 2);
             ctx.fill();
-          });
+          }
 
           ctx.restore();
           break;
