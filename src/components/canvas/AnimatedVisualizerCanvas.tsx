@@ -319,6 +319,55 @@ export const AnimatedVisualizerCanvas: React.FC<AnimatedVisualizerCanvasProps> =
           break;
         }
 
+        case 'perimeter-shimmer': {
+          // Gemini Edge Plasma / Fire Glow (Additive Edge-Hugging Color Licks)
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          ctx.filter = 'blur(60px)'; // Heavy diffused organic fire blur
+
+          const edgeColors = [
+            { r: 66, g: 133, b: 244 },  // Google Blue
+            { r: 147, g: 51, b: 234 },  // Vibrant Violet
+            { r: 236, g: 72, b: 153 },  // Fuchsia
+            { r: 234, g: 67, b: 53 },   // Coral Red
+            { r: 251, g: 188, b: 5 },   // Electric Yellow
+          ];
+
+          const flameCount = edgeColors.length;
+          const fireIntensity = 0.5 + energy * 2.5;
+
+          edgeColors.forEach((col, idx) => {
+            const angle = (idx / flameCount) * Math.PI * 2 + phase * 0.5;
+            const waveX = Math.sin(phase * 1.2 + idx) * (width * 0.3);
+            const waveY = Math.cos(phase * 0.9 + idx * 2) * (height * 0.2);
+
+            // Distribute flame emitter points along the 4 edges of the screen
+            let cx = width / 2 + waveX;
+            let cy = height / 2 + waveY;
+
+            if (idx === 0) { cx = width * 0.25 + waveX; cy = -20; }       // Top Edge
+            else if (idx === 1) { cx = width * 0.75 + waveX; cy = height + 20; } // Bottom Edge
+            else if (idx === 2) { cx = -20; cy = height * 0.3 + waveY; }        // Left Edge
+            else if (idx === 3) { cx = width + 20; cy = height * 0.7 + waveY; }  // Right Edge
+            else { cx = width / 2 + waveX; cy = height / 2 + waveY; }           // Center Core Lick
+
+            const flameRadius = Math.max(width, height) * 0.35 * (0.8 + fireIntensity * 0.8 + Math.sin(phase * 2 + idx) * 0.3);
+
+            const radialGrad = ctx.createRadialGradient(cx, cy, flameRadius * 0.05, cx, cy, flameRadius);
+            radialGrad.addColorStop(0, `rgba(${col.r}, ${col.g}, ${col.b}, ${0.6 + fireIntensity * 0.3})`);
+            radialGrad.addColorStop(0.5, `rgba(${col.r}, ${col.g}, ${col.b}, ${0.25 + fireIntensity * 0.2})`);
+            radialGrad.addColorStop(1, `rgba(${col.r}, ${col.g}, ${col.b}, 0)`);
+
+            ctx.fillStyle = radialGrad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, flameRadius, 0, Math.PI * 2);
+            ctx.fill();
+          });
+
+          ctx.restore();
+          break;
+        }
+
         case 'sparkle': {
           // Gemini-Style Multi-Color Gradient Mesh Blob Orb (Google Brand Colors: Blue #4285F4, Purple #8b5cf6, Red #EA4335, Yellow #FBBC05)
           const baseRadius = Math.min(width, height) * 0.22;

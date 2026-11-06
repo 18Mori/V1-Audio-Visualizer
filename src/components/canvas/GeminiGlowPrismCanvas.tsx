@@ -139,31 +139,42 @@ export const GeminiGlowPrismCanvas: React.FC<GeminiGlowPrismCanvasProps> = ({
 
       ctx.restore();
 
-      // 4. Supplemental Top Accent Shimmer Line (Gemini Bottom Bar Rim)
+      // 4. Supplemental Top Accent Shimmer Waveform (Smooth Curvy Waveflow)
       ctx.save();
-      ctx.beginPath();
-      const lineGradient = ctx.createLinearGradient(0, height - 2, width, height - 2);
+      const lineGradient = ctx.createLinearGradient(0, height - 30, width, height - 30);
       lineGradient.addColorStop(0, 'rgba(66, 133, 244, 0)');
-      lineGradient.addColorStop(0.25, 'rgba(66, 133, 244, 0.8)');
-      lineGradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.9)');
-      lineGradient.addColorStop(0.75, 'rgba(234, 67, 53, 0.8)');
+      lineGradient.addColorStop(0.2, 'rgba(66, 133, 244, 0.8)');
+      lineGradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.95)');
+      lineGradient.addColorStop(0.8, 'rgba(234, 67, 53, 0.8)');
       lineGradient.addColorStop(1, 'rgba(251, 188, 5, 0)');
 
       ctx.strokeStyle = lineGradient;
-      ctx.lineWidth = 2 + energy * 3;
-      ctx.shadowBlur = 20;
+      ctx.lineWidth = 3 + energy * 4;
+      ctx.shadowBlur = 25 + energy * 20;
       ctx.shadowColor = '#8b5cf6';
       
-      const sliceWidth = width / 100;
-      let lineX = 0;
-      for (let i = 0; i <= 100; i++) {
-        const freqIdx = freq ? Math.floor((i / 100) * (freq.length / 2)) : 0;
-        const val = freq && freq[freqIdx] ? freq[freqIdx] / 255 : energy;
-        const lineY = height - 10 - Math.sin(i * 0.1 + phase * 3) * (10 * val);
+      const sliceWidth = width / 80;
+      const waveCoords: { x: number; y: number }[] = [];
 
-        if (i === 0) ctx.moveTo(lineX, lineY);
-        else ctx.lineTo(lineX, lineY);
-        lineX += sliceWidth;
+      for (let i = 0; i <= 80; i++) {
+        const freqIdx = freq ? Math.floor((i / 80) * (freq.length / 2)) : 0;
+        const val = freq && freq[freqIdx] ? (freq[freqIdx] / 255) * sensitivity : energy;
+        
+        const sineWave1 = Math.sin(i * 0.08 + phase * 2.5);
+        const sineWave2 = Math.cos(i * 0.05 - phase * 1.8);
+        const waveY = (height - 35) + (sineWave1 + sineWave2) * (12 * val) * Math.sin((i / 80) * Math.PI);
+
+        waveCoords.push({ x: i * sliceWidth, y: waveY });
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(waveCoords[0].x, waveCoords[0].y);
+      for (let i = 0; i < waveCoords.length - 1; i++) {
+        const p1 = waveCoords[i];
+        const p2 = waveCoords[i + 1];
+        const midX = (p1.x + p2.x) / 2;
+        const midY = (p1.y + p2.y) / 2;
+        ctx.quadraticCurveTo(p1.x, p1.y, midX, midY);
       }
       ctx.stroke();
       ctx.restore();

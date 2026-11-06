@@ -1,4 +1,4 @@
-export type VisualizerMode = 'waves' | 'orb' | 'bars' | 'prism-loader' | 'sparkle' | 'gemini-prism';
+export type VisualizerMode = 'waves' | 'orb' | 'bars' | 'prism-loader' | 'sparkle' | 'gemini-prism' | 'perimeter-shimmer';
 
 export type VisualizerState = 'idle' | 'listening' | 'thinking' | 'speaking';
 

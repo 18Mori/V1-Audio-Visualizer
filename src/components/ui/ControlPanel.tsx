@@ -44,6 +44,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     { id: 'bars', label: 'Neon Bars', icon: <BarChart2 className="w-4 h-4" /> },
     { id: 'prism-loader', label: 'Gooey Prism', icon: <Sparkles className="w-4 h-4" /> },
     { id: 'sparkle', label: 'Gemini Sparkle', icon: <Sparkles className="w-4 h-4" /> },
+    { id: 'perimeter-shimmer', label: 'Perimeter Shimmer', icon: <Sparkles className="w-4 h-4" /> },
   ];
 
   return (
